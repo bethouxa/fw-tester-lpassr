@@ -6,6 +6,8 @@
 import socketserver
 from threading import Thread
 import logging
+import sys
+from pprint import pprint
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -52,9 +54,21 @@ def run_single(port, proto):
 
 
 if __name__ == '__main__':
-    run([
-        (8888, 'tcp'),
-        (8889, 'tcp'),
-        (8887, 'tcp'),
-        (8888, 'udp'),
-    ])
+    if len(sys.argv) == 1:
+        print("usage:")
+        print("./pingport host:port/proto [,...]")
+        print("./pingport -f targetsfile")
+        sys.exit(-1)
+
+    targets = []
+
+    if sys.argv[1] == "-f":
+        for line in open(sys.argv[2]).readlines():
+            port, proto = line.split("/")
+            targets.append((port, proto))
+    else:
+        for arg in sys.argv[1:]:
+            port, proto = arg.split("/")
+            targets.append ((int(port), proto))
+
+    run(targets)

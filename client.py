@@ -5,6 +5,8 @@
 
 import socket
 from concurrent.futures import ThreadPoolExecutor
+import sys
+from pprint import pprint
 
 import logging
 logger = logging.getLogger()
@@ -110,12 +112,26 @@ def unflatten_res(results):
 
 
 if __name__ == '__main__':
-    targets = [
-        ('127.0.0.1','8887','tcp'),
-        ('127.0.0.1', '8888', 'tcp'),
-        ('127.0.0.1', '8889', 'tcp'),
-        ('127.0.0.1', '8888', 'udp')
-        ]
+    if len(sys.argv) == 1:
+        print("usage:")
+        print("./pingport host:port/proto [,...]")
+        print("./pingport -f targetsfile")
+        sys.exit(-1)
+    targets = []
+
+    if sys.argv[1] == "-f":
+        for line in open(sys.argv[2]).readlines():
+            _, proto = line.split("/")
+            host, port = _.split(":")
+            targets.append((host, port, proto))
+    else:
+        for arg in sys.argv[1:]:
+            _, proto = arg.split("/")
+            host, port = _.split(":")
+            targets.append ((host, port, proto))
+
+    print("Starting on ports:")
+    pprint(targets)
 
     displ_pretty(unflatten_res(ping(targets)))
 
